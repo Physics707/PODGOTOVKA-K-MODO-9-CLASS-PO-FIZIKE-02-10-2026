@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>МОДО Физика — Интеллектуальная система персонализации подготовки</title>
+<meta name="description" content="Интеллектуальная система персонализации подготовки к МОДО по физике на основе диагностического анализа учебных дефицитов учащихся. Автор: Кунгозин Д.Б.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05040f;--panel:rgba(10,8,30,.72);--line:rgba(0,240,255,.35);
+  --cyan:#00f0ff;--pink:#ff2bd6;--lime:#9dff3c;--amber:#ffc23c;--red:#ff4d6d;
+  --text:#e9f6ff;--muted:#9fb3c8;--r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Exo 2',system-ui,sans-serif;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-2;background-size:cover;background-position:center;transition:background-image .8s ease;filter:saturate(1.2)}
+.bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(5,4,15,.55),rgba(5,4,15,.92) 70%),linear-gradient(180deg,rgba(255,43,214,.12),rgba(0,240,255,.08))}
+.grid-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(0,240,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.06) 1px,transparent 1px);background-size:40px 40px;mask-image:linear-gradient(180deg,transparent,#000 60%)}
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(5,4,15,.7);border-bottom:1px solid var(--line)}
+.top{max-width:1200px;margin:auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between}
+.logo{font-family:Orbitron;font-weight:900;font-size:1.25rem;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 8px var(--cyan),0 0 22px var(--cyan)}
+.logo span{color:var(--pink);text-shadow:0 0 8px var(--pink),0 0 22px var(--pink)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:600 .9rem 'Exo 2';color:var(--text);background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:999px;cursor:pointer;transition:.25s}
+nav button:hover{border-color:var(--line)}
+nav button.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(0,240,255,.5),inset 0 0 12px rgba(0,240,255,.2)}
+main{max-width:1200px;margin:auto;padding:24px 16px 80px}
+.view{display:none;animation:fade .5s ease}.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1{font-family:Orbitron;font-size:clamp(1.4rem,4vw,2.6rem);line-height:1.2;margin-bottom:12px;background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px rgba(0,240,255,.45))}
+h2{font-family:Orbitron;font-size:clamp(1.1rem,3vw,1.6rem);color:var(--cyan);text-shadow:0 0 10px rgba(0,240,255,.6);margin-bottom:14px}
+h3{font-family:Orbitron;font-size:1rem;margin-bottom:8px}
+p.lead{color:var(--muted);max-width:820px;margin-bottom:8px;line-height:1.55}
+.author{display:inline-block;margin:10px 0 22px;padding:10px 16px;border:1px solid rgba(255,43,214,.5);border-radius:12px;background:rgba(255,43,214,.08);box-shadow:0 0 18px rgba(255,43,214,.25);font-size:.92rem;line-height:1.5}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(0,240,255,.08)}
+.tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;margin-top:18px}
+.tcard{position:relative;cursor:pointer;border-radius:var(--r);padding:20px 16px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,rgba(0,240,255,.12),rgba(255,43,214,.10));border:1px solid var(--line);transition:.3s;overflow:hidden}
+.tcard::before{content:"";position:absolute;inset:-2px;border-radius:inherit;background:conic-gradient(from 0deg,var(--cyan),var(--pink),var(--lime),var(--cyan));z-index:-1;opacity:0;transition:.3s}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 0 24px rgba(0,240,255,.5),0 0 50px rgba(255,43,214,.25)}
+.tcard .num{font-family:Orbitron;font-size:2.6rem;font-weight:900;color:var(--cyan);text-shadow:0 0 14px var(--cyan)}
+.tcard .lbl{font-size:.75rem;letter-spacing:2px;color:var(--pink);font-family:Orbitron}
+.tcard .meta{font-size:.82rem;color:var(--muted)}
+.tcard .done{position:absolute;top:10px;right:10px;font-size:.75rem;padding:3px 8px;border-radius:999px;background:rgba(157,255,60,.15);color:var(--lime);border:1px solid var(--lime)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{padding:7px 12px;border-radius:999px;border:1px solid var(--line);font-size:.85rem;cursor:pointer;user-select:none;transition:.2s;background:rgba(0,0,0,.25)}
+.chip.on{border-color:var(--pink);color:#fff;background:rgba(255,43,214,.2);box-shadow:0 0 12px rgba(255,43,214,.5)}
+.btn{font:700 .95rem 'Exo 2';cursor:pointer;padding:12px 22px;border-radius:12px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,240,255,.08);transition:.25s;letter-spacing:.5px}
+.btn:hover{background:var(--cyan);color:#001018;box-shadow:0 0 22px var(--cyan)}
+.btn.pink{border-color:var(--pink);color:var(--pink);background:rgba(255,43,214,.08)}
+.btn.pink:hover{background:var(--pink);color:#18001a;box-shadow:0 0 22px var(--pink)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.progress{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:18px}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 0 10px var(--cyan);transition:width .4s}
+.tag{font-size:.75rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--cyan)}
+.tag.p{border-color:var(--pink);color:var(--pink)}.tag.g{border-color:var(--lime);color:var(--lime)}
+.qtext{font-size:1.12rem;line-height:1.55;margin-bottom:14px}
+.svgbox{background:rgba(0,0,0,.45);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:14px;display:flex;justify-content:center}
+.svgbox svg{width:100%;max-width:440px;height:auto}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;font:600 1rem 'Exo 2';color:var(--text);padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);cursor:pointer;transition:.2s;display:flex;gap:12px;align-items:center}
+.opt b{font-family:Orbitron;color:var(--cyan);min-width:22px}
+.opt:hover{border-color:var(--cyan)}
+.opt.sel{border-color:var(--pink);background:rgba(255,43,214,.15);box-shadow:0 0 14px rgba(255,43,214,.4)}
+.opt.ok{border-color:var(--lime);background:rgba(157,255,60,.15);box-shadow:0 0 14px rgba(157,255,60,.45)}
+.opt.bad{border-color:var(--red);background:rgba(255,77,109,.15)}
+.sol{margin-top:14px;padding:14px;border-radius:12px;border-left:4px solid var(--lime);background:rgba(157,255,60,.07);line-height:1.6}
+.sol.bad{border-left-color:var(--red);background:rgba(255,77,109,.07)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0}
+.stat{padding:16px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);text-align:center}
+.stat .v{font-family:Orbitron;font-size:1.8rem;color:var(--cyan);text-shadow:0 0 10px var(--cyan)}
+.stat .k{font-size:.8rem;color:var(--muted)}
+.bar{margin:10px 0}
+.bar .t{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:4px}
+.bar .tr{height:12px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar .tr i{display:block;height:100%;border-radius:8px}
+.plan li{margin:8px 0 8px 20px;line-height:1.5}
+.lvl-low{color:var(--red)}.lvl-mid{color:var(--amber)}.lvl-hi{color:var(--lime)}
+input,select{font:600 1rem 'Exo 2';color:var(--text);background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:10px;padding:12px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--pink);box-shadow:0 0 12px rgba(255,43,214,.4)}
+label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 6px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:22px}
+.feat .panel{padding:16px}
+.feat p{color:var(--muted);font-size:.9rem;line-height:1.5}
+.note{font-size:.85rem;color:var(--muted);margin-top:10px;line-height:1.5}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:20px;border-top:1px solid var(--line)}
+.lang{font-size:.8rem;color:var(--muted)}
+@media(max-width:640px){
+  .top{justify-content:center}.logo{font-size:1.05rem}
+  nav button{padding:7px 9px;font-size:.8rem}
+  .panel{padding:14px}.qtext{font-size:1rem}.tcard{min-height:120px}.tcard .num{font-size:2rem}
+  .tests{grid-template-columns:repeat(2,1fr);gap:10px}
+}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div><div class="grid-fx"></div>
+<header><div class="top">
+  <div class="logo">МОДО<span>·</span>PHYSICS<span>.AI</span></div>
+  <nav id="nav">
+    <button data-v="home" class="active">Главная</button>
+    <button data-v="results">Результаты и план</button>
+    <button data-v="trainer">Тренажёр</button>
+    <button data-v="final">Завершительный тест</button>
+    <button data-v="about">О проекте</button>
+  </nav>
+</div></header>
+
+<main>
+<!-- HOME -->
+<section class="view active" id="home">
+  <h1>Интеллектуальная система персонализации подготовки к МОДО по физике для 9 классов</h1>
+  <p class="lead">Диагностический анализ учебных дефицитов учащихся: пройдите диагностический тест, получите персональный план действий и отработайте слабые темы в адаптивном тренажёре.</p>
+  <div class="author">Автор — учитель физики <b>Кунгозин Даулет Багдашевич</b>, педагог-модератор<br>Специализированная школа-интернат-колледж олимпийского резерва г. Павлодар</div>
+  <h2>МОДО · Диагностические тесты</h2>
+  <p class="lead">В каждом тесте 10 заданий: 3 теоретических вопроса, 5 задач и 2 графических задания. Правильные ответы в диагностике не показываются.</p>
+  <div class="tests" id="tests"></div>
+</section>
+
+<!-- TEST RUNNER (shared) -->
+<section class="view" id="runner"><div class="panel" id="runnerBox"></div></section>
+
+<!-- RESULTS -->
+<section class="view" id="results"><div id="resultsBox"></div></section>
+
+<!-- TRAINER -->
+<section class="view" id="trainer">
+  <div class="panel" id="trainerSetup">
+    <h2>Тренажёр</h2>
+    <p class="lead">Выберите разделы и формат заданий. Система генерирует задания и сразу проверяет ответ. При ошибке показывается правильный ответ, для задач — полное решение с объяснением.</p>
+    <h3>Разделы</h3><div class="chips" id="trSec"></div>
+    <h3 style="margin-top:12px">Формат</h3><div class="chips" id="trType"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="trStart">Начать тренировку</button>
+      <button class="btn pink" id="trWeak">Тренировать мои слабые темы</button>
+    </div>
+  </div>
+  <div class="panel" id="trainerBox" style="display:none;margin-top:16px"></div>
+</section>
+
+<!-- FINAL -->
+<section class="view" id="final">
+  <div class="panel" id="finalSetup">
+    <h2>Завершительный тест</h2>
+    <p class="lead">15 заданий по всем разделам. Правильные ответы не показываются. Результат отправляется учителю в Google Таблицу.</p>
+    <div class="form">
+      <div><label>Фамилия Имя</label><input id="fName" placeholder="Введите ФИ"></div>
+      <div><label>Класс</label><input id="fClass" placeholder="9 «Б»"></div>
+    </div>
+    <div class="row" style="margin-top:16px"><button class="btn pink" id="fStart">Начать тест</button></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="view" id="about">
+  <h1>О проекте</h1>
+  <div class="panel">
+    <h3 style="color:var(--pink)">Проблема</h3><p class="lead">Учащиеся готовятся к МОДО по физике «вслепую», не зная своих конкретных пробелов; учитель не успевает индивидуально анализировать ошибки каждого.</p>
+    <h3 style="color:var(--pink);margin-top:12px">Цель</h3><p class="lead">Создать цифровую систему, которая диагностирует учебные дефициты и формирует персональную траекторию подготовки.</p>
+    <h3 style="color:var(--pink);margin-top:12px">Задачи</h3>
+    <ul class="plan"><li>10 диагностических тестов по 6 разделам курса физики;</li><li>автоматический анализ ошибок по разделам и темам;</li><li>интерактивный тренажёр с генерацией заданий, проверкой и пошаговыми решениями;</li><li>завершительный тест с отправкой результатов учителю в Google Таблицу.</li></ul>
+    <h3 style="color:var(--pink);margin-top:12px">Ожидаемые результаты</h3><p class="lead">Рост среднего балла МОДО, сокращение времени учителя на анализ, повышение мотивации и самостоятельности учащихся.</p>
+    <h3 style="color:var(--pink);margin-top:12px">Технологии</h3><p class="lead">HTML5, CSS3, JavaScript ES6+, SVG-графика, алгоритм параметрической генерации заданий, адаптивный анализ дефицитов, Google Apps Script + Google Sheets. Работает в браузере смартфона и ПК, без установки.</p>
+    <h3 style="color:var(--pink);margin-top:12px">Этичность и безопасность</h3><p class="lead">Персональные данные не собираются, кроме фамилии, имени и класса в завершительном тесте. Результаты диагностики хранятся только на устройстве ученика.</p>
+    <h3 style="color:var(--pink);margin-top:12px">Настройка Google Таблицы (для учителя)</h3>
+    <p class="note">1) Создайте Google Таблицу → Расширения → Apps Script. 2) Вставьте код:<br>
+    <code style="color:var(--lime)">function doPost(e){var s=SpreadsheetApp.getActiveSheet();var d=JSON.parse(e.postData.contents);s.appendRow([new Date(),d.name,d["class"],d.score,d.max,d.percent+"%",d.details]);return ContentService.createTextOutput("ok");}</code><br>
+    3) Развернуть → Веб-приложение → доступ «Все». 4) Вставьте полученный URL ниже и нажмите «Сохранить».</p>
+    <div class="row" style="margin-top:8px"><input id="gsUrl" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;min-width:220px"><button class="btn" id="gsSave">Сохранить</button></div>
+  </div>
+</section>
+</main>
+<footer>© 2026 Кунгозин Д.Б. · СШИКОР г. Павлодар · МОДО Физика · Қазақша / Русский</footer>
+
+<script>
+"use strict";
+/* ===== CONFIG ===== */
+// Вставьте URL веб-приложения Google Apps Script сюда (или через вкладку «О проекте»)
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWErIm1-pzyxJ38WFwizaVFn3hhbAUqODBVaRCYADknF3ojlv80uZIf36aHXmOTAPJzg/exec";
+const BGS = [
+ "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=70",
+ "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1600&q=70",
+ "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=70",
+ "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1600&q=70",
+ "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=1600&q=70",
+ "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1600&q=70",
+ "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1600&q=70",
+ "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1600&q=70"
+];
+const SECTIONS = ["Тепловые явления","Основы электростатики","Электромагнитные явления","Световые явления","Кинематика","Динамика"];
+const TYPES = {theory:"Тест",problem:"Задача",graph:"Графическое задание"};
+
+/* ===== UTILS ===== */
+const $ = s=>document.querySelector(s);
+function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296}}
+let R = Math.random;
+const ri=(a,b)=>Math.floor(R()*(b-a+1))+a;
+const pick=a=>a[Math.floor(R()*a.length)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=x=>{const r=Math.round(x*1000)/1000;return String(r).replace(".",",")};
+function numOpts(c,unit){const f=[c*2,c/2,c*10,c+Math.max(1,Math.round(c*0.3)),c*1.5,c/10,c*3].map(v=>Math.round(v*1000)/1000);const set=new Set([fmt(c)]);const out=[fmt(c)+" "+unit];for(const v of shuffle(f)){if(out.length>=4)break;if(v>0&&!set.has(fmt(v))){set.add(fmt(v));out.push(fmt(v)+" "+unit)}}return mk(out)}
+function mk(arr){const correct=arr[0];const o=shuffle(arr);return{options:o,correct:o.indexOf(correct)}}
+const store={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+
+/* ===== THEORY BANK ===== */
+const THEORY = {
+"Тепловые явления":[
+ ["Теплопроводность","Каким способом теплота передаётся в твёрдых телах?",["Теплопроводностью","Конвекцией","Излучением","Испарением"]],
+ ["Конвекция","Каким способом тепло передаётся в жидкостях и газах при нагревании снизу?",["Конвекцией","Теплопроводностью","Излучением","Кристаллизацией"]],
+ ["Излучение","Каким способом энергия от Солнца передаётся Земле?",["Излучением","Конвекцией","Теплопроводностью","Диффузией"]],
+ ["Удельная теплоёмкость","Удельная теплоёмкость показывает количество теплоты, необходимое для нагревания…",["1 кг вещества на 1 °C","1 кг вещества до кипения","всего тела на 1 °C","1 м³ вещества на 1 °C"]],
+ ["Агрегатные состояния","Во время плавления кристаллического тела его температура…",["не изменяется","увеличивается","уменьшается","сначала растёт, затем падает"]],
+ ["Испарение","От чего НЕ зависит скорость испарения жидкости?",["от массы сосуда","от температуры","от площади поверхности","от наличия ветра"]]
+],
+"Основы электростатики":[
+ ["Взаимодействие зарядов","Одноимённые заряды…",["отталкиваются","притягиваются","не взаимодействуют","нейтрализуются"]],
+ ["Закон сохранения заряда","В замкнутой системе алгебраическая сумма зарядов…",["остаётся постоянной","увеличивается","уменьшается","равна нулю всегда"]],
+ ["Единицы","Единица электрического заряда в СИ —",["кулон","вольт","ампер","фарад"]],
+ ["Электризация","При электризации трением тела получают…",["равные по модулю разноимённые заряды","одинаковые заряды","только положительные заряды","нет зарядов"]],
+ ["Проводники и диэлектрики","Какое вещество является диэлектриком?",["стекло","медь","графит","раствор соли"]],
+ ["Электрическое поле","Силовой характеристикой электрического поля является…",["напряжённость","потенциал","ёмкость","заряд"]]
+],
+"Электромагнитные явления":[
+ ["Магнитное поле тока","Вокруг проводника с током существует…",["магнитное поле","только электрическое поле","гравитационное поле","ничего"]],
+ ["Электромагнитная индукция","Явление электромагнитной индукции открыл…",["М. Фарадей","Х. Эрстед","А. Ампер","Г. Ом"]],
+ ["Правило буравчика","Направление линий магнитного поля прямого тока определяют по правилу…",["буравчика","левой руки","Ленца","Кирхгофа"]],
+ ["Сила Ампера","Направление силы Ампера определяют по правилу…",["левой руки","буравчика","правой руки для индукции","Ленца"]],
+ ["Закон Ома","Сила тока на участке цепи прямо пропорциональна…",["напряжению","сопротивлению","длине проводника","времени"]],
+ ["Электродвигатель","Электродвигатель преобразует…",["электрическую энергию в механическую","механическую в электрическую","тепловую в электрическую","световую в механическую"]]
+],
+"Световые явления":[
+ ["Закон отражения","Угол отражения…",["равен углу падения","больше угла падения","меньше угла падения","всегда 90°"]],
+ ["Преломление","При переходе света из воздуха в стекло луч…",["приближается к перпендикуляру","удаляется от перпендикуляра","не меняет направления","отражается полностью"]],
+ ["Линзы","Собирающая линза в середине…",["толще, чем по краям","тоньше, чем по краям","одинаковой толщины","плоская"]],
+ ["Оптическая сила","Единица оптической силы линзы —",["диоптрия","метр","люмен","кандела"]],
+ ["Тень","Образование тени объясняется…",["прямолинейным распространением света","отражением","преломлением","дисперсией"]],
+ ["Плоское зеркало","Изображение в плоском зеркале…",["мнимое, прямое, равное","действительное, перевёрнутое","мнимое, уменьшенное","действительное, увеличенное"]]
+],
+"Кинематика":[
+ ["Равномерное движение","При равномерном прямолинейном движении скорость…",["постоянна","растёт","уменьшается","равна нулю"]],
+ ["Ускорение","Ускорение характеризует быстроту изменения…",["скорости","координаты","пути","массы"]],
+ ["Свободное падение","Ускорение свободного падения у поверхности Земли приблизительно равно…",["9,8 м/с²","1 м/с²","98 м/с²","0,98 м/с²"]],
+ ["Перемещение","Перемещение — это…",["вектор, соединяющий начальное и конечное положение","длина траектории","скорость за единицу времени","линия движения"]],
+ ["Относительность движения","Траектория движения зависит от…",["выбора системы отсчёта","массы тела","цвета тела","температуры"]],
+ ["Движение по окружности","Центростремительное ускорение направлено…",["к центру окружности","по касательной","от центра","вверх"]]
+],
+"Динамика":[
+ ["I закон Ньютона","Явление сохранения скорости тела при отсутствии действия других тел называется…",["инерцией","инертностью","гравитацией","трением"]],
+ ["II закон Ньютона","Второй закон Ньютона:",["F = ma","F = mg","p = mv","F = kx"]],
+ ["III закон Ньютона","Силы, с которыми тела действуют друг на друга, …",["равны по модулю и противоположны","равны и сонаправлены","различны","взаимно перпендикулярны"]],
+ ["Сила тяжести","Единица силы в СИ —",["ньютон","джоуль","ватт","паскаль"]],
+ ["Импульс","Импульс тела — это произведение…",["массы на скорость","массы на ускорение","силы на время","массы на g"]],
+ ["Сила упругости","Закон Гука выражается формулой…",["F = kx","F = μN","F = ma","F = G·m₁m₂/r²"]]
+]};
+
+/* ===== PROBLEM GENERATORS ===== */
+const PROB = {
+"Тепловые явления":[
+ ()=>{const c=pick([4200,920,460,380,2100]),m=ri(1,5),dt=ri(10,60),Q=c*m*dt;const sub={4200:"воды",920:"алюминия",460:"железа",380:"меди",2100:"льда"}[c];
+  return{topic:"Количество теплоты при нагревании",q:`Какое количество теплоты нужно, чтобы нагреть ${m} кг ${sub} на ${dt} °C? (c = ${c} Дж/(кг·°C))`,...numOpts(Q/1000,"кДж"),solution:`Дано: m = ${m} кг, Δt = ${dt} °C, c = ${c} Дж/(кг·°C).<br>Формула: Q = c·m·Δt.<br>Q = ${c}·${m}·${dt} = ${Q} Дж = <b>${fmt(Q/1000)} кДж</b>.<br>Объяснение: теплота пропорциональна массе, теплоёмкости и изменению температуры.`}},
+ ()=>{const l=pick([[340000,"льда"],[25000,"свинца"],[59000,"олова"]]),m=ri(2,8),Q=l[0]*m;
+  return{topic:"Плавление",q:`Какое количество теплоты необходимо для плавления ${m} кг ${l[1]}, взятого при температуре плавления? (λ = ${l[0]} Дж/кг)`,...numOpts(Q/1000,"кДж"),solution:`Формула: Q = λ·m.<br>Q = ${l[0]}·${m} = ${Q} Дж = <b>${fmt(Q/1000)} кДж</b>.<br>При плавлении температура постоянна, вся энергия идёт на разрушение кристаллической решётки.`}},
+ ()=>{const q=pick([[4.6e7,"бензина"],[2.7e7,"каменного угля"],[1e7,"сухих дров"]]),m=ri(2,10),Q=q[0]*m;
+  return{topic:"Сгорание топлива",q:`Сколько теплоты выделится при полном сгорании ${m} кг ${q[1]}? (q = ${fmt(q[0]/1e6)}·10⁶ Дж/кг)`,...numOpts(Q/1e6,"МДж"),solution:`Формула: Q = q·m.<br>Q = ${fmt(q[0]/1e6)}·10⁶·${m} = <b>${fmt(Q/1e6)} МДж</b>.`}}
+],
+"Основы электростатики":[
+ ()=>{const q1=ri(1,9),q2=ri(1,9),r=pick([0.1,0.2,0.3]);const F=9e9*q1*1e-6*q2*1e-6/(r*r);
+  return{topic:"Закон Кулона",q:`Два точечных заряда ${q1} мкКл и ${q2} мкКл находятся на расстоянии ${fmt(r)} м. Найдите силу их взаимодействия (k = 9·10⁹ Н·м²/Кл²).`,...numOpts(Math.round(F*100)/100,"Н"),solution:`Формула: F = k·|q₁|·|q₂| / r².<br>F = 9·10⁹ · ${q1}·10⁻⁶ · ${q2}·10⁻⁶ / ${fmt(r)}² = <b>${fmt(Math.round(F*100)/100)} Н</b>.<br>Сила обратно пропорциональна квадрату расстояния.`}},
+ ()=>{const F=ri(2,20)/1000,q=ri(1,5)*1e-6;const E=F/q;
+  return{topic:"Напряжённость поля",q:`На заряд ${fmt(q*1e6)} мкКл в электрическом поле действует сила ${fmt(F*1000)} мН. Найдите напряжённость поля.`,...numOpts(Math.round(E),"Н/Кл"),solution:`Формула: E = F / q.<br>E = ${fmt(F)} Н / ${fmt(q*1e6)}·10⁻⁶ Кл = <b>${fmt(Math.round(E))} Н/Кл</b>.`}},
+ ()=>{const n=ri(2,9),e=1.6e-19,q=n*1e10*e;
+  return{topic:"Элементарный заряд",q:`Тело приобрело ${n}·10¹⁰ избыточных электронов. Каков модуль его заряда? (e = 1,6·10⁻¹⁹ Кл)`,...numOpts(Math.round(q*1e9*1000)/1000,"нКл"),solution:`Формула: q = N·e.<br>q = ${n}·10¹⁰ · 1,6·10⁻¹⁹ = ${fmt(n*1.6)}·10⁻⁹ Кл = <b>${fmt(Math.round(q*1e12)/1000)} нКл</b>.`}}
+],
+"Электромагнитные явления":[
+ ()=>{const U=pick([12,24,36,220]),R=pick([4,6,8,10,20]);const I=U/R;
+  return{topic:"Закон Ома",q:`Напряжение на резисторе ${U} В, его сопротивление ${R} Ом. Найдите силу тока.`,...numOpts(Math.round(I*100)/100,"А"),solution:`Закон Ома: I = U / R.<br>I = ${U} / ${R} = <b>${fmt(Math.round(I*100)/100)} А</b>.`}},
+ ()=>{const r1=ri(2,15),r2=ri(2,15),r3=ri(2,15);
+  return{topic:"Последовательное соединение",q:`Три резистора ${r1} Ом, ${r2} Ом и ${r3} Ом соединены последовательно. Найдите общее сопротивление.`,...numOpts(r1+r2+r3,"Ом"),solution:`При последовательном соединении R = R₁ + R₂ + R₃ = ${r1}+${r2}+${r3} = <b>${r1+r2+r3} Ом</b>.`}},
+ ()=>{const U=pick([110,220]),I=ri(2,10);
+  return{topic:"Мощность тока",q:`Электроприбор работает при напряжении ${U} В и силе тока ${I} А. Какова его мощность?`,...numOpts(U*I,"Вт"),solution:`P = U·I = ${U}·${I} = <b>${U*I} Вт</b>.`}},
+ ()=>{const B=ri(1,9)/10,I=ri(2,10),L=ri(2,8)/10;const F=B*I*L;
+  return{topic:"Сила Ампера",q:`Проводник длиной ${fmt(L)} м с током ${I} А расположен перпендикулярно линиям магнитного поля с индукцией ${fmt(B)} Тл. Найдите силу Ампера.`,...numOpts(Math.round(F*1000)/1000,"Н"),solution:`F = B·I·L·sinα, α = 90°.<br>F = ${fmt(B)}·${I}·${fmt(L)} = <b>${fmt(Math.round(F*1000)/1000)} Н</b>.`}}
+],
+"Световые явления":[
+ ()=>{const F=pick([0.1,0.2,0.25,0.5]);const D=1/F;
+  return{topic:"Оптическая сила линзы",q:`Фокусное расстояние собирающей линзы ${fmt(F)} м. Найдите её оптическую силу.`,...numOpts(D,"дптр"),solution:`D = 1 / F = 1 / ${fmt(F)} = <b>${fmt(D)} дптр</b>.`}},
+ ()=>{const d=pick([30,40,60]),F=pick([10,15,20]);const f=d*F/(d-F);
+  return{topic:"Формула тонкой линзы",q:`Предмет находится на расстоянии ${d} см от собирающей линзы с фокусным расстоянием ${F} см. На каком расстоянии получится изображение?`,...numOpts(Math.round(f*10)/10,"см"),solution:`1/F = 1/d + 1/f ⇒ f = d·F/(d − F).<br>f = ${d}·${F}/(${d}−${F}) = <b>${fmt(Math.round(f*10)/10)} см</b>.`}},
+ ()=>{const a=ri(15,75);
+  return{topic:"Закон отражения",q:`Угол между падающим лучом и поверхностью зеркала ${a}°. Найдите угол между падающим и отражённым лучами.`,...numOpts(180-2*a,"°"),solution:`Угол падения α = 90° − ${a}° = ${90-a}°. Угол отражения равен углу падения.<br>Угол между лучами = 2α = <b>${180-2*a}°</b>.`}}
+],
+"Кинематика":[
+ ()=>{const v0=ri(0,10),a=ri(1,5),t=ri(2,10),v=v0+a*t;
+  return{topic:"Равноускоренное движение",q:`Тело, имея начальную скорость ${v0} м/с, движется с ускорением ${a} м/с². Какой будет скорость через ${t} с?`,...numOpts(v,"м/с"),solution:`v = v₀ + a·t = ${v0} + ${a}·${t} = <b>${v} м/с</b>.`}},
+ ()=>{const a=ri(1,6),t=ri(2,10),s=a*t*t/2;
+  return{topic:"Путь при равноускоренном движении",q:`Автомобиль трогается с места с ускорением ${a} м/с². Какой путь он пройдёт за ${t} с?`,...numOpts(s,"м"),solution:`s = v₀t + at²/2, v₀ = 0.<br>s = ${a}·${t}²/2 = <b>${fmt(s)} м</b>.`}},
+ ()=>{const s=ri(6,30)*10,t=ri(2,10)*5;
+  return{topic:"Средняя скорость",q:`Велосипедист проехал ${s} м за ${t} с. Найдите его скорость.`,...numOpts(Math.round(s/t*100)/100,"м/с"),solution:`v = s / t = ${s} / ${t} = <b>${fmt(Math.round(s/t*100)/100)} м/с</b>.`}},
+ ()=>{const t=ri(1,5),h=5*t*t;
+  return{topic:"Свободное падение",q:`Тело свободно падает без начальной скорости ${t} с. Какое расстояние оно пролетит? (g = 10 м/с²)`,...numOpts(h,"м"),solution:`h = g·t²/2 = 10·${t}²/2 = <b>${h} м</b>.`}}
+],
+"Динамика":[
+ ()=>{const m=ri(2,20),a=ri(1,6);
+  return{topic:"II закон Ньютона",q:`Какая сила сообщает телу массой ${m} кг ускорение ${a} м/с²?`,...numOpts(m*a,"Н"),solution:`F = m·a = ${m}·${a} = <b>${m*a} Н</b>.`}},
+ ()=>{const k=ri(2,10)*50,x=ri(1,10);
+  return{topic:"Закон Гука",q:`Пружину жёсткостью ${k} Н/м растянули на ${x} см. Найдите силу упругости.`,...numOpts(k*x/100,"Н"),solution:`F = k·x = ${k}·${fmt(x/100)} = <b>${fmt(k*x/100)} Н</b>. Не забудьте перевести см в м!`}},
+ ()=>{const m=ri(2,60),v=ri(2,15);
+  return{topic:"Импульс тела",q:`Найдите импульс тела массой ${m} кг, движущегося со скоростью ${v} м/с.`,...numOpts(m*v,"кг·м/с"),solution:`p = m·v = ${m}·${v} = <b>${m*v} кг·м/с</b>.`}},
+ ()=>{const m=ri(2,50),mu=pick([0.1,0.2,0.3,0.4]);const F=mu*m*10;
+  return{topic:"Сила трения",q:`Брусок массой ${m} кг скользит по горизонтальной поверхности. Коэффициент трения ${fmt(mu)}. Найдите силу трения (g = 10 м/с²).`,...numOpts(Math.round(F*100)/100,"Н"),solution:`F<sub>тр</sub> = μ·m·g = ${fmt(mu)}·${m}·10 = <b>${fmt(Math.round(F*100)/100)} Н</b>.`}}
+]};
+
+/* ===== SVG GRAPH GENERATORS ===== */
+const ax=(xl,yl,xt,yt,maxX,maxY)=>{let s=`<rect width="440" height="300" fill="none"/><g stroke="#2b3d55" stroke-width="1">`;for(let i=1;i<=xt;i++){const x=50+i*360/xt;s+=`<line x1="${x}" y1="20" x2="${x}" y2="260"/>`}for(let i=1;i<=yt;i++){const y=260-i*240/yt;s+=`<line x1="50" y1="${y}" x2="410" y2="${y}"/>`}s+=`</g><g stroke="#00f0ff" stroke-width="2"><line x1="50" y1="260" x2="420" y2="260"/><line x1="50" y1="260" x2="50" y2="12"/></g><g fill="#9fb3c8" font-size="12" font-family="Exo 2">`;for(let i=0;i<=xt;i++)s+=`<text x="${50+i*360/xt}" y="278" text-anchor="middle">${fmt(i*maxX/xt)}</text>`;for(let i=1;i<=yt;i++)s+=`<text x="44" y="${264-i*240/yt}" text-anchor="end">${fmt(i*maxY/yt)}</text>`;s+=`</g><text x="425" y="255" fill="#ff2bd6" font-size="13" text-anchor="end" font-family="Exo 2">${xl}</text><text x="56" y="16" fill="#ff2bd6" font-size="13" font-family="Exo 2">${yl}</text>`;return s};
+const svg=b=>`<svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">${b}</svg>`;
+const P=(x,y,mx,my)=>[50+x/mx*360,260-y/my*240];
+const GRAPH = {
+"Кинематика":()=>{const v0=ri(0,4)*2,a=ri(1,4),T=6,v1=v0+a*T,mY=Math.ceil(v1/6)*6;const [x0,y0]=P(0,v0,T,mY),[x1,y1]=P(T,v1,T,mY);
+  return{topic:"График скорости v(t)",q:"По графику зависимости скорости от времени определите ускорение тела.",svg:svg(ax("t, с","v, м/с",6,6,T,mY)+`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#ff2bd6" stroke-width="3" style="filter:drop-shadow(0 0 4px #ff2bd6)"/>`),...numOpts(a,"м/с²"),solution:`a = (v − v₀)/t = (${v1} − ${v0}) / ${T} = <b>${a} м/с²</b>. Ускорение равно тангенсу угла наклона графика.`}},
+"Тепловые явления":()=>{const tm=pick([0,80,232,327]);const name={0:"лёд",80:"нафталин",232:"олово",327:"свинец"}[tm];const mY=tm===0?40:Math.ceil((tm+60)/60)*60;const t0=tm===0?-20:tm-60;const y=v=>260-(v-(tm===0?-40:0))/(mY-(tm===0?-40:0))*240;const lbl=(v)=>v;
+  const g=`<g stroke="#2b3d55">${[1,2,3,4,5,6].map(i=>`<line x1="${50+i*60}" y1="20" x2="${50+i*60}" y2="260"/>`).join("")}</g><g stroke="#00f0ff" stroke-width="2"><line x1="50" y1="260" x2="420" y2="260"/><line x1="50" y1="260" x2="50" y2="12"/></g><text x="425" y="255" fill="#ff2bd6" font-size="13" text-anchor="end">τ, мин</text><text x="56" y="16" fill="#ff2bd6" font-size="13">t, °C</text>`;
+  const pts=[[50,y(t0)],[150,y(tm)],[290,y(tm)],[390,y(tm+40)]];
+  return{topic:"График плавления",q:`На графике показан процесс нагревания и плавления вещества (${name}). Определите температуру плавления.`,svg:svg(g+`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="#ff2bd6" stroke-width="3"/><line x1="50" y1="${y(tm)}" x2="150" y2="${y(tm)}" stroke="#9dff3c" stroke-dasharray="4"/><text x="44" y="${y(tm)+4}" fill="#9dff3c" font-size="12" text-anchor="end">?</text><text x="44" y="${y(t0)+4}" fill="#9fb3c8" font-size="12" text-anchor="end">${lbl(t0)}</text><text x="220" y="${y(tm)-8}" fill="#9dff3c" font-size="12" text-anchor="middle">плавление</text>`),...mk([tm+" °C",(tm+20)+" °C",t0+" °C",(tm+40)+" °C"]),solution:`Температура плавления соответствует горизонтальному участку графика: <b>${tm} °C</b>. В это время энергия идёт на разрушение кристаллической решётки, температура не меняется.`}},
+"Электромагнитные явления":()=>{const R=pick([2,4,5,10]);const mU=12,mI=Math.ceil(mU/R/6*10)/10*6||1;const [x1,y1]=P(mU,mU/R,mU,mI);
+  return{topic:"Вольт-амперная характеристика",q:"По графику зависимости силы тока от напряжения определите сопротивление проводника.",svg:svg(ax("U, В","I, А",6,6,mU,mI)+`<line x1="50" y1="260" x2="${x1}" y2="${y1}" stroke="#ff2bd6" stroke-width="3"/>`),...numOpts(R,"Ом"),solution:`R = U / I. Возьмём точку: U = ${mU} В, I = ${fmt(mU/R)} А.<br>R = ${mU} / ${fmt(mU/R)} = <b>${R} Ом</b>.`}},
+"Динамика":()=>{const k=pick([50,100,200,400]);const mX=6,mF=Math.ceil(k*0.06/6)*6;const [x1,y1]=P(mX,k*mX/100,mX,mF);
+  return{topic:"График силы упругости",q:"По графику зависимости силы упругости от удлинения пружины определите жёсткость пружины.",svg:svg(ax("x, см","F, Н",6,6,mX,mF)+`<line x1="50" y1="260" x2="${x1}" y2="${y1}" stroke="#ff2bd6" stroke-width="3"/>`),...numOpts(k,"Н/м"),solution:`k = F / x. При x = ${mX} см = ${fmt(mX/100)} м сила F = ${fmt(k*mX/100)} Н.<br>k = ${fmt(k*mX/100)} / ${fmt(mX/100)} = <b>${k} Н/м</b>. Переведите сантиметры в метры!`}},
+"Световые явления":()=>{const a=pick([20,30,40,50,60]);const r=a*Math.PI/180;const L=140;const x1=220-L*Math.sin(r),y1=180-L*Math.cos(r),x2=220+L*Math.sin(r);
+  return{topic:"Отражение света",q:"Луч падает на плоское зеркало, как показано на рисунке. Чему равен угол отражения?",svg:svg(`<line x1="40" y1="180" x2="400" y2="180" stroke="#00f0ff" stroke-width="4"/><g stroke="#00f0ff" stroke-width="1">${Array.from({length:18},(_,i)=>`<line x1="${50+i*20}" y1="182" x2="${40+i*20}" y2="196"/>`).join("")}</g><line x1="220" y1="40" x2="220" y2="180" stroke="#9fb3c8" stroke-dasharray="5"/><line x1="${x1}" y1="${y1}" x2="220" y2="180" stroke="#ff2bd6" stroke-width="3"/><line x1="220" y1="180" x2="${x2}" y2="${y1}" stroke="#9dff3c" stroke-width="3" stroke-dasharray="8 4"/><text x="${220-30}" y="120" fill="#ff2bd6" font-size="16">${a}°</text><text x="${232}" y="120" fill="#9dff3c" font-size="16">?</text><text x="60" y="230" fill="#9fb3c8" font-size="13">зеркало</text>`),...mk([a+"°",(90-a)+"°",(2*a)+"°",(180-a)+"°"]),solution:`По закону отражения угол отражения равен углу падения (оба отсчитываются от перпендикуляра): <b>${a}°</b>.`}},
+"Основы электростатики":()=>{const pos=R()<0.5;const arrows=[0,45,90,135,180,225,270,315].map(d=>{const r=d*Math.PI/180;const x1=220+30*Math.cos(r),y1=150+30*Math.sin(r),x2=220+120*Math.cos(r),y2=150+120*Math.sin(r);const [hx,hy]=pos?[x2,y2]:[x1,y1];const dir=pos?r:r+Math.PI;const a1=dir+2.6,a2=dir-2.6;return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ff2bd6" stroke-width="2"/><polygon points="${hx},${hy} ${hx+12*Math.cos(a1)},${hy+12*Math.sin(a1)} ${hx+12*Math.cos(a2)},${hy+12*Math.sin(a2)}" fill="#ff2bd6"/>`}).join("");
+  return{topic:"Линии напряжённости",q:"На рисунке изображены силовые линии электрического поля точечного заряда. Каков знак заряда?",svg:svg(arrows+`<circle cx="220" cy="150" r="20" fill="#05040f" stroke="#00f0ff" stroke-width="3"/><text x="220" y="157" fill="#00f0ff" font-size="20" text-anchor="middle">?</text>`),...mk(pos?["положительный","отрицательный","нейтральный","невозможно определить"]:["отрицательный","положительный","нейтральный","невозможно определить"]),solution:`Силовые линии направлены ${pos?"от заряда — заряд <b>положительный</b>":"к заряду — заряд <b>отрицательный</b>"}.`}}
+};
+
+function genTask(sec,type){
+  let t;
+  if(type==="theory"){const [topic,q,opts]=pick(THEORY[sec]);t={topic,q,...mk(opts),solution:`Правильный ответ: <b>${opts[0]}</b>.`}}
+  else if(type==="problem")t=pick(PROB[sec])();
+  else t=GRAPH[sec]();
+  return{sec,type,...t};
+}
+function genDiagnostic(n){
+  R=rng(n*7919+13);
+  const secs=shuffle(SECTIONS);const plan=[];
+  for(let i=0;i<3;i++)plan.push([secs[i%6],"theory"]);
+  for(let i=0;i<5;i++)plan.push([secs[(i+3)%6],"problem"]);
+  for(let i=0;i<2;i++)plan.push([secs[(i+2+n)%6],"graph"]);
+  const res=plan.map(([s,t])=>genTask(s,t));R=Math.random;return res;
+}
+function genFinal(){const out=[];SECTIONS.forEach(s=>{out.push(genTask(s,"problem"))});shuffle(SECTIONS).slice(0,5).forEach(s=>out.push(genTask(s,"theory")));shuffle(SECTIONS).slice(0,4).forEach(s=>out.push(genTask(s,"graph")));return shuffle(out)}
+
+/* ===== NAV & BG ===== */
+function setBg(i){$("#bg").style.backgroundImage=`url(${BGS[i%BGS.length]})`}
+function show(v){document.querySelectorAll(".view").forEach(e=>e.classList.toggle("active",e.id===v));document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.v===v));window.scrollTo(0,0);
+  if(v==="results")renderResults();if(v==="home"){renderHome();setBg(0)}if(v==="trainer")setBg(3);if(v==="final")setBg(5);if(v==="about")setBg(6)}
+$("#nav").onclick=e=>{const v=e.target.dataset?.v;if(v)show(v)};
+
+/* ===== HOME ===== */
+function renderHome(){const done=store.get("diag",{});$("#tests").innerHTML=Array.from({length:10},(_,i)=>{const n=i+1,d=done[n];return`<div class="tcard" data-n="${n}">${d?`<span class="done">${d.score}/10</span>`:""}<div><div class="lbl">ДИАГНОСТИЧЕСКИЙ ТЕСТ</div><div class="num">№${n}</div></div><div class="meta">10 заданий · 6 разделов</div></div>`}).join("");
+  document.querySelectorAll(".tcard").forEach(c=>c.onclick=()=>startTest("diag",+c.dataset.n))}
+
+/* ===== TEST RUNNER (diagnostic & final) ===== */
+let run=null;
+function startTest(mode,n,student){
+  const tasks=mode==="diag"?genDiagnostic(n):genFinal();
+  run={mode,n,tasks,i:0,ans:Array(tasks.length).fill(null),student};
+  setBg(mode==="diag"?n:5);
+  document.querySelectorAll(".view").forEach(e=>e.classList.toggle("active",e.id==="runner"));window.scrollTo(0,0);drawQ();
+}
+function drawQ(){const t=run.tasks[run.i],N=run.tasks.length;const title=run.mode==="diag"?`Диагностический тест №${run.n}`:"Завершительный тест";
+  $("#runnerBox").innerHTML=`<div class="qhead"><h2 style="margin:0">${title}</h2><span class="tag">Вопрос ${run.i+1} / ${N}</span></div>
+  <div class="progress"><i style="width:${(run.i)/N*100}%"></i></div>
+  <div class="row" style="margin-bottom:10px"><span class="tag">${t.sec}</span><span class="tag ${t.type==="problem"?"p":t.type==="graph"?"g":""}">${TYPES[t.type]}</span></div>
+  <div class="qtext">${t.q}</div>${t.svg?`<div class="svgbox">${t.svg}</div>`:""}
+  <div class="opts">${t.options.map((o,j)=>`<button class="opt ${run.ans[run.i]===j?"sel":""}" data-j="${j}"><b>${"ABCD"[j]}</b>${o}</button>`).join("")}</div>
+  <div class="row" style="margin-top:18px;justify-content:space-between"><button class="btn" id="prev" ${run.i===0?"disabled":""}>← Назад</button>
+  ${run.i<N-1?`<button class="btn" id="next">Далее →</button>`:`<button class="btn pink" id="finish">Завершить тест</button>`}</div>`;
+  document.querySelectorAll("#runnerBox .opt").forEach(b=>b.onclick=()=>{run.ans[run.i]=+b.dataset.j;drawQ()});
+  $("#prev").onclick=()=>{run.i--;drawQ()};
+  if($("#next"))$("#next").onclick=()=>{run.i++;drawQ()};
+  if($("#finish"))$("#finish").onclick=finishTest;
+}
+function finishTest(){
+  const left=run.ans.filter(a=>a===null).length;
+  if(left&&!confirm(`Без ответа: ${left}. Завершить тест?`))return;
+  const items=run.tasks.map((t,i)=>({sec:t.sec,topic:t.topic,type:t.type,ok:run.ans[i]===t.correct}));
+  const score=items.filter(x=>x.ok).length;
+  if(run.mode==="diag"){const d=store.get("diag",{});d[run.n]={score,items,date:Date.now()};store.set("diag",d);
+    $("#runnerBox").innerHTML=`<h2>Тест №${run.n} завершён</h2><div class="stats"><div class="stat"><div class="v">${score}/10</div><div class="k">правильных ответов</div></div><div class="stat"><div class="v">${score*10}%</div><div class="k">результат</div></div></div><p class="lead">Правильные ответы в диагностическом тесте не показываются. Откройте персональный анализ ошибок и план действий.</p><div class="row" style="margin-top:12px"><button class="btn pink" onclick="show('results')">Результаты и план действий</button><button class="btn" onclick="show('home')">К тестам</button></div>`;
+  } else {sendFinal(score,items)}
+}
+
+/* ===== RESULTS & PLAN ===== */
+function analyze(){const d=store.get("diag",{});const bySec={},byTopic={};let tot=0,ok=0;
+  Object.values(d).forEach(r=>r.items.forEach(it=>{tot++;if(it.ok)ok++;(bySec[it.sec]??={t:0,o:0});bySec[it.sec].t++;if(it.ok)bySec[it.sec].o++;const k=it.sec+"|"+it.topic;(byTopic[k]??={sec:it.sec,topic:it.topic,t:0,o:0});byTopic[k].t++;if(it.ok)byTopic[k].o++}));
+  return{d,bySec,byTopic,tot,ok}}
+function weakSections(){const {bySec}=analyze();return SECTIONS.filter(s=>bySec[s]&&bySec[s].o/bySec[s].t<0.7)}
+function renderResults(){setBg(2);const {d,bySec,byTopic,tot,ok}=analyze();const n=Object.keys(d).length;
+  if(!n){$("#resultsBox").innerHTML=`<div class="panel"><h2>Результаты и план действий</h2><p class="lead">Вы ещё не прошли ни одного диагностического теста. Начните с главной страницы.</p><button class="btn" onclick="show('home')" style="margin-top:12px">К диагностическим тестам</button></div>`;return}
+  const pct=Math.round(ok/tot*100);
+  const col=p=>p<50?"var(--red)":p<75?"var(--amber)":"var(--lime)";
+  const bars=SECTIONS.map(s=>{const b=bySec[s];if(!b)return`<div class="bar"><div class="t"><span>${s}</span><span style="color:var(--muted)">нет данных</span></div><div class="tr"></div></div>`;const p=Math.round(b.o/b.t*100);return`<div class="bar"><div class="t"><span>${s}</span><span style="color:${col(p)}">${p}% (${b.o}/${b.t})</span></div><div class="tr"><i style="width:${p}%;background:${col(p)};box-shadow:0 0 10px ${col(p)}"></i></div></div>`}).join("");
+  const weakT=Object.values(byTopic).filter(t=>t.o<t.t).sort((a,b)=>a.o/a.t-b.o/b.t);
+  const strong=SECTIONS.filter(s=>bySec[s]&&bySec[s].o/bySec[s].t>=0.75);
+  const level=pct<50?["Низкий","lvl-low"]:pct<75?["Средний","lvl-mid"]:["Высокий","lvl-hi"];
+  const typeStat={};Object.values(d).forEach(r=>r.items.forEach(it=>{(typeStat[it.type]??={t:0,o:0});typeStat[it.type].t++;if(it.ok)typeStat[it.type].o++}));
+  const worstType=Object.entries(typeStat).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t)[0];
+  $("#resultsBox").innerHTML=`<div class="panel"><h2>Результаты и план действий учащегося</h2>
+  <div class="stats"><div class="stat"><div class="v">${n}</div><div class="k">пройдено тестов</div></div><div class="stat"><div class="v">${pct}%</div><div class="k">средний результат</div></div><div class="stat"><div class="v ${level[1]}">${level[0]}</div><div class="k">уровень подготовки</div></div><div class="stat"><div class="v">${weakT.length}</div><div class="k">тем с дефицитами</div></div></div>
+  <h3 style="margin-top:10px">Освоение по разделам</h3>${bars}
+  <h3 style="margin-top:16px">Формат заданий</h3><div class="chips">${Object.entries(typeStat).map(([k,v])=>`<span class="chip">${TYPES[k]}: ${Math.round(v.o/v.t*100)}%</span>`).join("")}</div></div>
+  <div class="panel" style="margin-top:16px"><h2 style="color:var(--pink);text-shadow:0 0 10px var(--pink)">Персональный план действий</h2>
+  ${weakT.length?`<h3>Темы, требующие подтягивания (приоритет по убыванию):</h3><ul class="plan">${weakT.slice(0,10).map((t,i)=>`<li><b class="${t.o/t.t<0.5?"lvl-low":"lvl-mid"}">${i+1}. ${t.topic}</b> — ${t.sec} (верно ${t.o} из ${t.t})</li>`).join("")}</ul>`:`<p class="lead lvl-hi">Отлично! Дефицитов не обнаружено — поддерживайте уровень в тренажёре.</p>`}
+  <h3 style="margin-top:12px">Рекомендации:</h3><ul class="plan">
+  ${weakSections().map(s=>`<li>Повторите теорию раздела «${s}» и решите не менее 10 заданий в тренажёре.</li>`).join("")}
+  ${worstType&&worstType[1].o/worstType[1].t<0.7?`<li>Больше всего ошибок в формате «${TYPES[worstType[0]]}» — уделите ему особое внимание.</li>`:""}
+  ${strong.length?`<li>Сильные стороны: ${strong.join(", ")}. Закрепляйте их 1–2 раза в неделю.</li>`:""}
+  <li>Пройдите ещё ${Math.max(1,3-n)} диагностических теста для более точного анализа.</li>
+  <li>После тренировки пройдите Завершительный тест.</li></ul>
+  <div class="row" style="margin-top:14px"><button class="btn pink" onclick="show('trainer');trainWeak()">Тренировать слабые темы</button><button class="btn" onclick="if(confirm('Очистить результаты?')){localStorage.removeItem('diag');renderResults()}">Сбросить результаты</button></div></div>`;
+}
+
+/* ===== TRAINER ===== */
+const trSel={sec:new Set([SECTIONS[0]]),type:new Set(["problem"])};
+function chips(el,items,set,labels){el.innerHTML=items.map(k=>`<span class="chip ${set.has(k)?"on":""}" data-k="${k}">${labels?labels[k]:k}</span>`).join("");el.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{const k=c.dataset.k;set.has(k)?set.delete(k):set.add(k);chips(el,items,set,labels)})}
+chips($("#trSec"),SECTIONS,trSel.sec);chips($("#trType"),Object.keys(TYPES),trSel.type,TYPES);
+let tr={n:0,ok:0};
+function trainWeak(){const w=weakSections();trSel.sec=new Set(w.length?w:SECTIONS);trSel.type=new Set(Object.keys(TYPES));chips($("#trSec"),SECTIONS,trSel.sec);chips($("#trType"),Object.keys(TYPES),trSel.type,TYPES);startTrainer()}
+function startTrainer(){if(!trSel.sec.size||!trSel.type.size){alert("Выберите хотя бы один раздел и формат");return}tr={n:0,ok:0};$("#trainerBox").style.display="block";nextTrain();$("#trainerBox").scrollIntoView({behavior:"smooth"})}
+$("#trStart").onclick=startTrainer;$("#trWeak").onclick=trainWeak;
+function nextTrain(){const t=genTask(pick([...trSel.sec]),pick([...trSel.type]));setBg(ri(0,7));
+  $("#trainerBox").innerHTML=`<div class="qhead"><h3 style="margin:0">Задание ${tr.n+1}</h3><span class="tag">Верно: ${tr.ok} / ${tr.n}</span></div>
+  <div class="row" style="margin-bottom:10px"><span class="tag">${t.sec}</span><span class="tag ${t.type==="problem"?"p":t.type==="graph"?"g":""}">${TYPES[t.type]}</span><span class="tag">${t.topic}</span></div>
+  <div class="qtext">${t.q}</div>${t.svg?`<div class="svgbox">${t.svg}</div>`:""}
+  <div class="opts">${t.options.map((o,j)=>`<button class="opt" data-j="${j}"><b>${"ABCD"[j]}</b>${o}</button>`).join("")}</div><div id="fb"></div>`;
+  const bs=document.querySelectorAll("#trainerBox .opt");
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=j===t.correct;tr.n++;if(ok)tr.ok++;bs.forEach(x=>x.disabled=true);bs[t.correct].classList.add("ok");if(!ok)b.classList.add("bad");
+    $("#fb").innerHTML=`<div class="sol ${ok?"":"bad"}"><b style="font-family:Orbitron">${ok?"✔ Верно!":"✘ Неверно."}</b>${ok?"":`<br>Правильный ответ: <b>${t.options[t.correct]}</b>`}${(!ok||t.type!=="theory")?`<br><br><b>${t.type==="theory"?"Пояснение":"Решение"}:</b><br>${t.solution}`:""}</div><div class="row" style="margin-top:14px"><button class="btn" id="trNext">Следующее задание →</button><button class="btn pink" id="trStop">Закончить</button></div>`;
+    $("#trNext").onclick=nextTrain;$("#trStop").onclick=()=>{$("#trainerBox").innerHTML=`<h2>Тренировка завершена</h2><div class="stats"><div class="stat"><div class="v">${tr.ok}/${tr.n}</div><div class="k">верных ответов</div></div><div class="stat"><div class="v">${tr.n?Math.round(tr.ok/tr.n*100):0}%</div><div class="k">точность</div></div></div><button class="btn" onclick="startTrainer()">Ещё раз</button>`}})}
+
+
+/* ===== FINAL + GOOGLE SHEETS ===== */
+const gsUrl=()=>GOOGLE_SCRIPT_URL||store.get("gsUrl","");
+$("#gsUrl").value=gsUrl();$("#gsSave").onclick=()=>{store.set("gsUrl",$("#gsUrl").value.trim());alert("Адрес сохранён")};
+$("#fStart").onclick=()=>{const name=$("#fName").value.trim(),cls=$("#fClass").value.trim();if(name.length<3||!cls){alert("Введите фамилию, имя и класс");return}startTest("final",0,{name,cls})};
+
+async function sendFinal(score, items) {
+  const N = items.length, percent = Math.round(score / N * 100);
+  
+  // Детали по разделам
+  const per = {};
+  items.forEach(i => {
+    (per[i.sec] ??= { t: 0, o: 0 });
+    per[i.sec].t++;
+    if (i.ok) per[i.sec].o++;
+  });
+  const details = Object.entries(per).map(([s, v]) => `${s}: ${v.o}/${v.t}`).join("; ");
+  
+  // ✅ Счётчик попыток ВНУТРИ функции
+  const attempt = Number(store.get("finalAttempt", 0)) + 1;
+  store.set("finalAttempt", attempt);
+  
+  // ✅ attempt добавлен в payload
+  const payload = {
+    name: run.student.name,
+    class: run.student.cls,
+    score,
+    max: N,
+    percent,
+    details,
+    attempt
+  };
+  
+  $("#runnerBox").innerHTML = `
+    <h2>Завершительный тест завершён</h2>
+    <p class="lead">${payload.name}, ${payload.class}</p>
+    <div class="stats">
+      <div class="stat"><div class="v">${score}/${N}</div><div class="k">баллов</div></div>
+      <div class="stat"><div class="v">${percent}%</div><div class="k">результат</div></div>
+    </div>
+    <p class="lead" id="sendSt">Отправка результата учителю… (попытка №${attempt})</p>`;
+  
+  const url = gsUrl();
+  if (!url) {
+    $("#sendSt").innerHTML = "Адрес Google Таблицы не настроен учителем (вкладка «О проекте»). Покажите результат учителю.";
+    return;
+  }
+  
+  try {
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    $("#sendSt").innerHTML = `<span class="lvl-hi">✔ Результат отправлен в Google Таблицу учителя.</span>`;
+  } catch (e) {
+    $("#sendSt").innerHTML = `<span class="lvl-low">Не удалось отправить (нет интернета). Покажите результат учителю.</span>`;
+  }
+}
+
+/* ===== INIT ===== */
+BGS.forEach(u=>{const i=new Image();i.src=u});
+renderHome();setBg(0);
+</script>
+</body>
+</html>
